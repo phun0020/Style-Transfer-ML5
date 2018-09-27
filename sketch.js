@@ -1,6 +1,5 @@
 let style;
 let inputImg;
-let outputImg;
 
 function setup() {
     
@@ -11,9 +10,14 @@ $('img.style-img').click((el) => {
     $('img.style-img').removeClass('selected-img');
     let target = $(el)[0].target;
     target.classList.add('selected-img');
+
     let path = target.src;
     let styleName = getLastSegment(path);
     style = ml5.styleTransfer(`model/${styleName}`, modelLoaded);
+    
+    let description = $(target)[0].attributes[3].value;
+    $('#credit').html(description);
+    //$('#status').html("đợi xíu...");
 });
 
 $('img.input-img').click((el) => {
@@ -31,12 +35,10 @@ function getLastSegment(path) {
 
 function modelLoaded() {
     if(style != undefined && inputImg != undefined) {
-        style.transfer(inputImg, (err, img) => {
-            if(err) {
-                console.log(error);
-            } else {
-                $('#outputImg')[0].src = img.src;
-            }
-        });
+        const outputImg = $('#outputImg')[0];
+        outputImg.src = "images/loading.gif";
+        style.transfer(inputImg)
+        .then(img => outputImg.src = img.src)
+        .catch(error => console.log(error));
     }
 }
