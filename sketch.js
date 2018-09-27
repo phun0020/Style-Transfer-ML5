@@ -1,8 +1,11 @@
+const loadingGif = $('#loading');
+const outputImg = $('#outputImg')[0];
+
 let style;
 let inputImg;
 
 function setup() {
-    
+    loadingGif.hide();
 }
 
 // events
@@ -13,11 +16,14 @@ $('img.style-img').click((el) => {
 
     let path = target.src;
     let styleName = getLastSegment(path);
+    if(inputImg != undefined) {
+        loadingGif.show();
+        outputImg.src = "";
+    }
     style = ml5.styleTransfer(`model/${styleName}`, modelLoaded);
     
     let description = $(target)[0].attributes[3].value;
     $('#credit').html(description);
-    //$('#status').html("đợi xíu...");
 });
 
 $('img.input-img').click((el) => {
@@ -27,18 +33,20 @@ $('img.input-img').click((el) => {
     if(style != undefined) modelLoaded();
 });
 
+// func
+function modelLoaded() {
+    if(style != undefined && inputImg != undefined) {
+        style.transfer(inputImg)
+        .then(img => {
+            outputImg.src = img.src;
+            loadingGif.hide();
+        })
+        .catch(error => console.log(error));
+    }
+}
+
 // helper
 function getLastSegment(path) {
     let parts= path.split('/');
     return parts.pop().split('.').slice(0, -1).join('.'); 
-}
-
-function modelLoaded() {
-    if(style != undefined && inputImg != undefined) {
-        const outputImg = $('#outputImg')[0];
-        outputImg.src = "images/loading.gif";
-        style.transfer(inputImg)
-        .then(img => outputImg.src = img.src)
-        .catch(error => console.log(error));
-    }
 }
